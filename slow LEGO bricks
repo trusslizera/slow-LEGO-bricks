@@ -1,0 +1,96 @@
+from flask import Flask, render_template_string
+import random
+
+app = Flask(__name__)
+
+@app.route('/')
+def lego_bricks():
+    num_bricks = 10
+
+    html_template = r"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Slowly Colliding LEGO Bricks</title>
+        <style>
+        body { 
+            perspective: 800px; 
+            overflow: hidden;
+        }
+
+        .container { 
+            width: 100vw; 
+            height: 100vh; 
+        }
+
+        .lego {
+            width: 80px;
+            height: 40px;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: left 2s linear, top 2s linear, transform 2s linear;
+        }
+
+        .face { 
+            position: absolute;
+            width: 100%; 
+            height: 100%; 
+            background: #f00;
+            border: 2px solid black;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* Positions for each face, with adjusted z-index */
+        .front  { transform: translateZ(20px); z-index: 6; }
+        .back   { transform: translateZ(-20px); z-index: 1; }
+        .right  { transform: rotateY(90deg) translateZ(20px); z-index: 5; }
+        .left   { transform: rotateY(-90deg) translateZ(20px); z-index: 2; }
+        .top    { transform: rotateX(90deg) translateZ(20px); z-index: 4; }
+        .bottom { transform: rotateX(-90deg) translateZ(20px); z-index: 3; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            {% for _ in range(num_bricks) %}
+            <div class="lego" style="left:{{ random.randint(0, 90) }}vw; top:{{ random.randint(0, 90) }}vh;">
+                <div class="face front"></div>
+                <div class="face back"></div>
+                <div class="face right"></div>
+                <div class="face left"></div>
+                <div class="face top"></div>
+                <div class="face bottom"></div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <script>
+        const bricks = document.querySelectorAll('.lego');
+        const container = document.querySelector('.container');
+
+        function animateBricks() {
+            bricks.forEach(brick => {
+                const x = Math.random() * (container.offsetWidth - brick.offsetWidth);
+                const y = Math.random() * (container.offsetHeight - brick.offsetHeight);
+                const rotationX = Math.random() * 360;
+                const rotationY = Math.random() * 360;
+                const rotationZ = Math.random() * 360;
+
+                brick.style.left = x + 'px';
+                brick.style.top = y + 'px';
+                brick.style.transform = `translateZ(-20px) rotateX(${rotationX}deg) rotateY(${rotationY}deg) rotateZ(${rotationZ}deg)`;
+            });
+
+            setTimeout(animateBricks, 2000); // 2-second delay
+        }
+
+        animateBricks(); // Start the animation
+        </script>
+    </body>
+    </html>
+    """
+
+    return render_template_string(html_template, num_bricks=num_bricks, random=random)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
